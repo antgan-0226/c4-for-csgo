@@ -36,5 +36,6 @@
 .\objects\main.o: .\sys\TIMER.h
 .\objects\main.o: .\hardware\Serial.h
 .\objects\main.o: .\hardware\mp3.h
+.\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\stdio.h

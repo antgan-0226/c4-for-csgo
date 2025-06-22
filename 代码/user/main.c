@@ -1,4 +1,5 @@
 #include "stm32f10x.h"
+#include "stm32f10x_flash.h"
 #include "matrixkey.h"
 #include "1602a.h"
 #include "delay.h"
@@ -7,31 +8,32 @@
 #include "TIMER.h"
 #include "Serial.h"
 #include "mp3.h"
+#include "string.h"
 #include <stdbool.h>
 #include <stdio.h> 
 
+
 //函数声明
-void showDefaultScreen(void);
+void showDefaultScreen(void);//展示默认屏幕
 char arraysEqual(unsigned char arr1[], unsigned char arr2[], int size); //比较数组
 void rightShiftArray(unsigned char arr[], int size);
 void leftShiftArray(unsigned char arr[], int size); 
-void updateKeyPressState(void);
-void handleKeyPressFeedback(void);
-void clearPasswordArray(unsigned char pass[], int size);
-void updatePasswordDisplay(unsigned char pass[]);
-void showStarAnimation(void);
-void unlockPasswordScan(unsigned char pass[]);
-void deployPasswordScan(unsigned char pass[]);
+void updateKeyPressState(void);//更新按键标识
+void handleKeyPressFeedback(void);//按下键盘响应
+void clearPasswordArray(unsigned char pass[], int size);//清除密码
+void updatePasswordDisplay(unsigned char pass[]);//更新密码展示
+void showStarAnimation(void);//展示***动画
+void unlockPasswordScan(unsigned char pass[]);//解锁密码扫描
+void deployPasswordScan(unsigned char pass[]);//部署密码扫描 
 
 // 状态处理函数声明
-void handleInitState(void);
-void handlePasswordInputState(void);
-void handlePasswordVerifyState(void);
-void handleCountdownState(void);
-void handleUnlockSuccessState(void);
-void handleUnlockFailureState(void);
-void handleSettingModeState(void);
-void checkHashPress(void);
+void handleInitState(void);//初始化状态
+void handlePasswordInputState(void);//处理输入状态
+void handlePasswordVerifyState(void);//验证密码状态
+void handleUnlockSuccessState(void);//解锁成功，CT胜利
+void handleUnlockFailureState(void);//解锁失败，T胜利，播放音乐盒
+void handleSettingModeState(void); //设置模式
+void checkHashPress(void); //检查是否按下#按键
 
 // 定义系统状态
 typedef enum {
@@ -57,7 +59,7 @@ unsigned char defaultPassword[8]={'7','3','5','5','6','0','8'};	//默认密码
 unsigned char password[8]={'*','*','*','*','*','*','*'};	//用户输入的密码
 unsigned char unlockPassword[8]={'*','*','*','*','*','*','*'};	//解锁输入的密码
 
-char KeyNum; //按键变量
+char KeyNum, sign; //按键变量
 int unlockArrayIndex=0; //解密时密码下标
 int spaceCount=5; //居中显示前面空格数
 uint8_t isPressed=0; //是否键盘被按下标记
@@ -94,27 +96,27 @@ int main()
     checkHashPress();
 		
 		// 根据当前状态调用相应的处理函数
-        switch(currentState) {
-            case STATE_PASSWORD_INPUT:
-                handlePasswordInputState();
-                break;
-            case STATE_PASSWORD_VERIFY:
-                handlePasswordVerifyState();
-                break;
-            case STATE_UNLOCK_SUCCESS:
-                handleUnlockSuccessState();
-                break;
-            case STATE_UNLOCK_FAILURE:
-                handleUnlockFailureState();
-                break;
-            case STATE_SETTING_MODE:
-                handleSettingModeState();
-                break;
-            default:
-                currentState = STATE_PASSWORD_INPUT;
-                break;
-        }
-        Delay_ms(10);
+    switch(currentState) {
+				case STATE_PASSWORD_INPUT:
+						handlePasswordInputState();
+						break;
+				case STATE_PASSWORD_VERIFY:
+						handlePasswordVerifyState();
+            break;
+				case STATE_UNLOCK_SUCCESS:
+            handleUnlockSuccessState();
+            break;
+				case STATE_UNLOCK_FAILURE:
+						handleUnlockFailureState();
+            break;
+        case STATE_SETTING_MODE:
+            handleSettingModeState();
+						break;
+				default:
+						currentState = STATE_PASSWORD_INPUT;
+						break;
+		}
+		Delay_ms(10);
   }
 }
 
@@ -160,7 +162,11 @@ void handlePasswordInputState(void) {
 								} else {
 										// 密码错误, 提示
 										LCD_WRITE_StrDATA("Password Error!", 0);
-										handleKeyPressFeedback();
+										for(int i = 0; i < 5; i++) {
+												LED1_Turn();
+												Delay_ms(50);
+										}
+										LED1_OFF();
 										Delay_ms(2000);
 										// 清空密码数组，恢复默认文案
 										clearPasswordArray(password, 7);
@@ -190,14 +196,9 @@ void handlePasswordVerifyState(void) {
 			// 蜂鸣器和LED亮起时间
 			for(int i = 0; i < 2; i++) {
 				KeyNum = MatrixKey_GetValue();
-				// 更新spaceCount状态
-				if(KeyNum != ' ') {
-					isPressed = 1;
-				} else {
-					isPressed = 0;
-				}
-					
-				if(isPressed == 0) {
+				if(KeyNum!=' '){sign=1;}
+			
+				if(sign == 0) {
 					Delay_ms(20);                    
 				} else {
 					unlockPasswordScan(unlockPassword);                            
@@ -207,32 +208,34 @@ void handlePasswordVerifyState(void) {
 		LED1_OFF();
 		for(int i=0; i<((int)((pow(((double)0.978),((double)j)))*50)-2); i++)//j增大，此for循环随时间增大而执行次数变少，所占用时间变短，即LED1_ON()被执行间隔的越来越短			
 		{
-			KeyNum = MatrixKey_GetValue();
-
-							if(isPressed==0)
-							{
-									showStarAnimation();							
-							}
-							else
-							{
-									unlockPasswordScan(unlockPassword);							
-							}
+				KeyNum = MatrixKey_GetValue();
+				if(KeyNum!=' '){sign=1;}
+			
+				if(sign==0)
+				{
+						showStarAnimation();							
+				}
+				else
+				{
+						unlockPasswordScan(unlockPassword);							
+				}
 		}
 		
 		// 检查解锁密码是否输入完成
 		if(unlockPassword[6] != '*') {
-			if(arraysEqual(password, unlockPassword, 8)) {
-				currentState = STATE_UNLOCK_SUCCESS;
-				return;
-			} else {
-				for (int i = 0; i < 7; i++) {
-					unlockPassword[i] = '*';
+				if(arraysEqual(password, unlockPassword, 7)) {
+					currentState = STATE_UNLOCK_SUCCESS;
+					return;
+				} else {
+					for (int i = 0; i < 7; i++) {
+						unlockPassword[i] = '*';
+					}
+					unlockArrayIndex = 0;
+					sign=0;
+					LCD_WRITE_StrDATA(unlockPassword, spaceCount);
 				}
-				unlockArrayIndex = 0;
-				LCD_WRITE_StrDATA(unlockPassword, spaceCount);
 			}
 		}
-	}
 		
 		//全部倒计时结束，拆弹失败
     currentState = STATE_UNLOCK_FAILURE;
@@ -251,13 +254,15 @@ void handleUnlockSuccessState(void) {
     }
     LCD_WRITE_StrDATA(unlockPassword, spaceCount);
     
-    for(int i = 0; i < 3; i++) {
-        Delay_ms(600);
+    for(int i = 0; i < 2; i++) {
+        Delay_ms(300);
         LCD_WRITE_StrDATA("                ", 0);
-        Delay_ms(600);
+        Delay_ms(300);
         LCD_WRITE_StrDATA(unlockPassword, spaceCount);
     }
-    
+		LCD_WRITE_StrDATA("                ", 0);
+		LCD_WRITE_StrDATA("CT win!", 5);
+		
     while(1) {
         LED2_ON(); // 保持继电器开启
     }
@@ -271,6 +276,7 @@ void handleUnlockFailureState(void) {
     Delay_ms(1300);
     LED1_OFF();
     
+		LCD_WRITE_StrDATA("T win!", 5);
     while(1) {
         LED2_OFF(); // 保持继电器关闭
     }
@@ -400,51 +406,56 @@ void showStarAnimation(void)
 //扫描键盘，更新解锁密码数组并更新显示
 void unlockPasswordScan(unsigned char pass[])
 {
-		// 定义局部变量存储是否需要更新显示
-		bool needDisplayUpdate = false;
+	
+	// 定义局部变量存储是否需要更新显示
 		KeyNum = MatrixKey_GetValue();
-	
-    // 处理数字键输入（0-9）
-    if ((KeyNum >= '0' && KeyNum <= '9') && (isPressed == 0)) {
-				// 按键防抖处理
-        Delay_ms(50);
-        // LED反馈
-        handleKeyPressFeedback();
-				pass[unlockArrayIndex] = KeyNum;//第一位为按下的键
-				unlockArrayIndex++;
-				if(unlockArrayIndex>=7)unlockArrayIndex=0;
-				needDisplayUpdate = true;
+		if (isPressed == 0) {
+			// 处理数字键输入（0-9）
+			if ((KeyNum!=' ') &&(KeyNum!='*') && (KeyNum!='#')&& (isPressed == 0)) {
+					// 按键防抖处理
+					Delay_ms(50);
+					// LED反馈
+					handleKeyPressFeedback();
+					pass[unlockArrayIndex] = KeyNum;//第一位为按下的键
+					unlockArrayIndex++;
+					if(unlockArrayIndex>=7)unlockArrayIndex=0;
+					updatePasswordDisplay(pass);
+			}
+			// 处理退格键(*)输入
+			else if (KeyNum == '*' && (isPressed == 0)) {
+					// 按键防抖处理
+					Delay_ms(50);
+					// LED反馈
+					handleKeyPressFeedback();
+					unlockArrayIndex--;
+					pass[unlockArrayIndex]='*';
+					updatePasswordDisplay(pass);
+			}
+			// 处理清除键(#)输入
+			else if (KeyNum == '#' && (isPressed == 0)) {
+					// 按键防抖处理
+					Delay_ms(50);
+					// LED反馈
+					handleKeyPressFeedback();
+					// 清空密码数组
+					clearPasswordArray(pass, 7);
+					// 标记需要更新显示
+					unlockArrayIndex=0;
+					updatePasswordDisplay(pass);
+			}
 		}
-		// 处理退格键(*)输入
-    else if (KeyNum == '*' && (isPressed == 0)) {
-        // 按键防抖处理
-        Delay_ms(50);
-        // LED反馈
-        handleKeyPressFeedback();
-				pass[unlockArrayIndex]='*';
-				unlockArrayIndex--;
-				needDisplayUpdate = true;
-    }
-    // 处理清除键(#)输入
-    else if (KeyNum == '#' && (isPressed == 0)) {
-        // 按键防抖处理
-        Delay_ms(50);
-        // LED反馈
-        handleKeyPressFeedback();
-        // 清空密码数组
-        clearPasswordArray(pass, 7);
-        // 标记需要更新显示
-				unlockArrayIndex=0;
-			  needDisplayUpdate = true;
-    }
-	
-	  // 更新按键状态
-    updateKeyPressState();
     
-    // 根据标记更新LCD显示
-    if (needDisplayUpdate) {
-        updatePasswordDisplay(pass);
-    }
+	  // 更新按键状态
+    if(KeyNum!=' ')
+		{
+			isPressed=1;//按下
+			Delay_ms(20);
+		}
+		else
+		{
+			isPressed=0;
+			Delay_ms(20);
+		}
 }
 
 void deployPasswordScan(unsigned char pass[]) {
