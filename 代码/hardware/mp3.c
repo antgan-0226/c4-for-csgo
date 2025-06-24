@@ -157,3 +157,38 @@ void mp3_boom_music(void)//默认播放02文件夹内000xxx.MP3歌曲
 		}
 
 }
+
+/**
+ * 播放01文件夹中的指定序号音乐
+ * @param musicIndex 音乐序号(0-81)
+ */
+void mp3_playMusic(uint8_t musicIndex)
+{
+    // 确保音乐序号在有效范围内
+    if (musicIndex > 81) {
+        musicIndex = 0; // 超出范围则默认播放第一首
+    }
+    
+    // 构造指令帧
+    Send_buf[0] = 0x7e;    // 帧头
+    Send_buf[1] = 0xff;    // 保留字节
+    Send_buf[2] = 0x06;    // 数据长度
+    Send_buf[3] = 0x0F;    // 播放指定文件夹中的音乐命令
+    Send_buf[4] = 0x00;    // 不需要反馈
+    
+    // 设置文件夹和文件编号
+    Send_buf[5] = 0x01;    // 高字节：固定为01文件夹
+    Send_buf[6] = musicIndex; // 低字节：文件编号
+    
+    // 计算校验和
+    uint16_t checksum = ~(0xff + 0x06 + 0x0F + 0x01 + musicIndex) + 1;
+    Send_buf[7] = (uint8_t)(checksum >> 8);    // 校验和高字节
+    Send_buf[8] = (uint8_t)(checksum & 0xFF);  // 校验和低字节
+    
+    Send_buf[9] = 0xef;    // 帧尾
+    
+    // 发送完整命令
+    for (uint8_t i = 0; i < 10; i++) {
+        Serial_SendByte(Send_buf[i]);
+    }
+}

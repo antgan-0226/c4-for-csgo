@@ -32,7 +32,7 @@ void handlePasswordInputState(void);//处理输入状态
 void handlePasswordVerifyState(void);//验证密码状态
 void handleUnlockSuccessState(void);//解锁成功，CT胜利
 void handleUnlockFailureState(void);//解锁失败，T胜利，播放音乐盒
-void handleSettingModeState(void); //设置模式
+void handleAlarmClockModeState(void); //闹钟模式
 void checkHashPress(void); //检查是否按下#按键
 
 // 定义系统状态
@@ -41,15 +41,8 @@ typedef enum {
     STATE_PASSWORD_VERIFY,// 密码验证状态
     STATE_UNLOCK_SUCCESS, // 解锁成功状态
     STATE_UNLOCK_FAILURE, // 解锁失败状态
-    STATE_SETTING_MODE    // 设置模式状态
+		STATE_ALARM_CLOCK_MODE    // 设置闹钟状态
 } SystemState;
-
-// 设置菜单枚举
-typedef enum {
-    SETTING_MAIN_MENU,        // 主菜单状态
-    SETTING_ADJUST_VOLUME,    // 调整音量
-    SETTING_EXIT              // 退出设置模式
-} SettingSubState;
 
 // 变量定义
 SystemState currentState = STATE_PASSWORD_INPUT;  // 当前系统状态
@@ -82,8 +75,9 @@ int main()
 	//开机默认显示文案
 	showDefaultScreen();
 	
-	MP3CMD(0x06, volumeLevel); //设置音量	  建议音量：8欧1瓦；25 若音质下降请调小音量！！
-	Delay_ms(50);
+	
+	Delay_ms(500);
+	mp3_playMusic(81);
 	
 	//	mp3_start();//由于市面上mini mp3模块质量参差不齐，导致上电后无法立刻检测到指令，需等段时间才能检测到
 					//如果你想启用上电音效，可以尝试取消此注释，尝试是否有上电音效
@@ -109,8 +103,8 @@ int main()
 				case STATE_UNLOCK_FAILURE:
 						handleUnlockFailureState();
             break;
-        case STATE_SETTING_MODE:
-            handleSettingModeState();
+        case STATE_ALARM_CLOCK_MODE:
+            handleAlarmClockModeState();
 						break;
 				default:
 						currentState = STATE_PASSWORD_INPUT;
@@ -132,7 +126,7 @@ void checkHashPress(void) {
     // #超过5次判定为进入设置模式
     if (hashPressed) {
         if (hashTimer >= 5) {
-            currentState = STATE_SETTING_MODE;
+            currentState = STATE_ALARM_CLOCK_MODE;
             hashPressed = 0;
         }
     } else {
@@ -282,11 +276,16 @@ void handleUnlockFailureState(void) {
     }
 }
 
-// 设置模式状态处理
-void handleSettingModeState(void) {
+void mp3_stop(void)
+{
+    // 发送停止播放命令 (0x16)
+    MP3CMD(0x16, 0);
+}
 
-//    // 直接进入新密码设置界面
-    LCD_WRITE_StrDATA("Setting Mode", 0);
+// 设置模式状态处理
+void handleAlarmClockModeState(void) {
+		LCD_WRITE_StrDATA("                ", 0);
+    LCD_WRITE_StrDATA("Alarm Clock Mode!", 0);
 }
 
 void TIM2_IRQHandler(void) // TIM2定时器中断服务函数

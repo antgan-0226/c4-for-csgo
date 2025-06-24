@@ -7,5 +7,6 @@ void mp3_start(void);
 void mp3_over(void);
 void mp3_boom(void);
 void mp3_boom_music(void);
+void mp3_playMusic(uint8_t musicIndex);
 
 #endif
