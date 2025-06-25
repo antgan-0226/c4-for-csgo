@@ -86,7 +86,7 @@ int main()
 	while(1)
 	{
 		KeyNum = MatrixKey_GetValue();
-		// 检测*和#是否同时按下
+		// 检测#是否按下
     checkHashPress();
 		
 		// 根据当前状态调用相应的处理函数
