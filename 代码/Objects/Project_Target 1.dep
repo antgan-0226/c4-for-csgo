@@ -902,7 +902,7 @@ I (.\library\misc.h)(0x67550E9B)
 I (D:\KeilC51\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
 I (D:\KeilC51\ARM\ARMCC\include\stdarg.h)(0x599ECD2A)
 F (.\hardware\Serial.h)(0x67654117)()
-F (.\hardware\mp3.c)(0x68582379)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\start -I .\user -I .\library -I .\sys -I .\hardware-I.\RTE\_Target_1-ID:\KeilC51\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\KeilC51\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\mp3.o --omf_browse .\objects\mp3.crf --depend .\objects\mp3.d)
+F (.\hardware\mp3.c)(0x686BD206)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\start -I .\user -I .\library -I .\sys -I .\hardware-I.\RTE\_Target_1-ID:\KeilC51\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\KeilC51\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\mp3.o --omf_browse .\objects\mp3.crf --depend .\objects\mp3.d)
 I (.\start\stm32f10x.h)(0x67550E9E)
 I (.\start\core_cm3.h)(0x67550E9E)
 I (D:\KeilC51\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -964,7 +964,7 @@ I (.\library\stm32f10x_usart.h)(0x67550E9C)
 I (.\library\stm32f10x_wwdg.h)(0x67550E9C)
 I (.\library\misc.h)(0x67550E9B)
 F (.\hardware\LED.h)(0x676544B9)()
-F (.\user\main.c)(0x6859E72D)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\start -I .\user -I .\library -I .\sys -I .\hardware-I.\RTE\_Target_1-ID:\KeilC51\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\KeilC51\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\user\main.c)(0x686BD057)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\start -I .\user -I .\library -I .\sys -I .\hardware-I.\RTE\_Target_1-ID:\KeilC51\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\KeilC51\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (.\start\stm32f10x.h)(0x67550E9E)
 I (.\start\core_cm3.h)(0x67550E9E)
 I (D:\KeilC51\ARM\ARMCC\include\stdint.h)(0x599ECD2E)

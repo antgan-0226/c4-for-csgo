@@ -92,6 +92,9 @@
 			102 c4倒计时结束爆炸_完整
 */
 
+#include "stm32f10x.h"
+#include "Serial.h"
+
 uint8_t Send_buf[10];
 void MP3CMD(uint8_t CMD , uint16_t data)
 {
@@ -101,17 +104,16 @@ void MP3CMD(uint8_t CMD , uint16_t data)
     Send_buf[2] = 0x06;    //长度
     Send_buf[3] = CMD;     //控制指令
     Send_buf[4] = 0x00;    //是否需要反馈
-		Send_buf[5] = (uint8_t)(data >> 8);    //data
+	Send_buf[5] = (uint8_t)(data >> 8);    //data
     Send_buf[6] = (uint8_t)(data);   //data
-		Send_buf[7] = ((~(0xff+0x06+CMD+data))+1) >> 8;    //校验和
-		Send_buf[8] = ((~(0xff+0x06+CMD+data))+1)&0x00ff;//校验和
+	Send_buf[7] = ((~(0xff+0x06+CMD+data))+1) >> 8;    //校验和
+	Send_buf[8] = ((~(0xff+0x06+CMD+data))+1)&0x00ff;//校验和
     Send_buf[9] = 0xef;    //尾
 	
-		for (u8 i = 0; i < 10; i ++)		//遍历数组
-		{
-			Serial_SendByte(Send_buf[i]);	  //依次调用Serial_SendByte发送每个字节数据
-		}
-
+	for (u8 i = 0; i < 10; i ++)		//遍历数组
+	{
+		Serial_SendByte(Send_buf[i]);	  //依次调用Serial_SendByte发送每个字节数据
+	}
 }
 
 
